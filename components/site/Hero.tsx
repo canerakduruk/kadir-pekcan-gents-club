@@ -26,7 +26,7 @@ export default function Hero() {
           </p>
           
           <div className="mt-12 flex flex-wrap justify-center gap-4 text-xs tracking-[0.3em] uppercase">
-             <a href="https://rande.vu" target="_blank" className="bg-[#d4af37] text-black px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2">
+             <a href="https://www.kolayrandevu.com/isletme/kadir-pekcan-gents-club?website=1" target="_blank" className="bg-[#d4af37] text-black px-6 py-3 rounded-full font-bold hover:scale-105 transition-transform flex items-center gap-2">
                Hemen Randevu Al
                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
              </a>

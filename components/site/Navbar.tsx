@@ -71,7 +71,7 @@ export default function Navbar() {
 
           {/* SAĞ: Randevu Butonu */}
           <div className="flex-1 flex justify-end">
-            <a href="https://rande.vu" target="_blank" rel="noopener noreferrer" className="border border-[#d4af37] text-[#d4af37] px-3 py-2 md:px-5 md:py-2 text-[10px] md:text-xs tracking-widest uppercase hover:bg-[#d4af37] hover:text-black transition-colors whitespace-nowrap">
+            <a href="https://www.kolayrandevu.com/isletme/kadir-pekcan-gents-club?website=1" target="_blank" rel="noopener noreferrer" className="border border-[#d4af37] text-[#d4af37] px-3 py-2 md:px-5 md:py-2 text-[10px] md:text-xs tracking-widest uppercase hover:bg-[#d4af37] hover:text-black transition-colors whitespace-nowrap">
               Randevu Al
             </a>
           </div>
