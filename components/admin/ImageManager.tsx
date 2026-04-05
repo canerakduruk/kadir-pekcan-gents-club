@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+import Image from "next/image"; // Next.js Image bileşeni eklendi
 
 interface ImageData {
     id: string;
@@ -14,8 +15,9 @@ export default function ImageManager() {
     const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const CLOUD_NAME = "dkouwyaz9";
-    const UPLOAD_PRESET = "gents_club_images";
+    // Bilgileri .env dosyasından çekiyoruz
+    const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+    const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
 
     useEffect(() => {
         const fetchImages = async () => {
@@ -34,7 +36,6 @@ export default function ImageManager() {
         fetchImages();
     }, []);
 
-    // Değişiklikleri Firestore'a kaydet (Silme ve Sıralama için)
     const saveToDatabase = async (newImages: ImageData[]) => {
         try {
             await setDoc(doc(db, "siteData", "gallery"), { images: newImages });
@@ -43,7 +44,6 @@ export default function ImageManager() {
         }
     };
 
-    // Cloudinary'e Fotoğraf Yükle ve Listeye Ekle
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -51,7 +51,7 @@ export default function ImageManager() {
         setUploading(true);
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", UPLOAD_PRESET);
+        formData.append("upload_preset", UPLOAD_PRESET || "");
 
         try {
             const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
@@ -61,7 +61,7 @@ export default function ImageManager() {
             const data = await res.json();
 
             const newImage: ImageData = {
-                id: Date.now().toString(), // Benzersiz ID
+                id: Date.now().toString(),
                 url: data.secure_url,
             };
 
@@ -73,11 +73,10 @@ export default function ImageManager() {
             alert("Yükleme sırasında bir hata oluştu.");
         } finally {
             setUploading(false);
-            e.target.value = ''; // Inputu temizle
+            e.target.value = '';
         }
     };
 
-    // Fotoğraf Sil
     const removeImage = (idToRemove: string) => {
         if (!window.confirm("Bu fotoğrafı silmek istediğinize emin misiniz?")) return;
         const updatedImages = images.filter(img => img.id !== idToRemove);
@@ -85,7 +84,6 @@ export default function ImageManager() {
         saveToDatabase(updatedImages);
     };
 
-    // Sıralama Değiştir (Yukarı / Aşağı)
     const moveImage = (index: number, direction: 'up' | 'down') => {
         const updatedImages = [...images];
         if (direction === 'up' && index > 0) {
@@ -102,8 +100,7 @@ export default function ImageManager() {
     return (
         <div className="bg-zinc-900 p-6 rounded-xl border border-zinc-800">
             <h2 className="text-xl font-semibold text-amber-500 mb-4">Galeri Yönetimi</h2>
-            <p className="text-sm text-zinc-400 mb-6">Sitede görünecek fotoğrafları yükleyin, silin veya sırasını değiştirin.</p>
-
+            
             <div className="mb-8 p-4 border border-dashed border-zinc-700 rounded-lg text-center">
                 <input
                     type="file"
@@ -117,44 +114,33 @@ export default function ImageManager() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {images.map((img, index) => (
-                    <div key={img.id} className="relative bg-zinc-950 border border-zinc-800 rounded-lg p-2 flex flex-col group">
-                        <img src={img.url} alt="Galeri" className="w-full h-40 object-cover rounded mb-3" />
+                    <div key={img.id} className="relative bg-zinc-950 border border-zinc-800 rounded-lg p-2 flex flex-col">
+                        {/* <img> yerine <Image> kullanıldı */}
+                        <div className="relative w-full h-40 mb-3 overflow-hidden rounded">
+                            <Image 
+                                src={img.url} 
+                                alt="Galeri Görseli" 
+                                fill 
+                                className="object-cover"
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                            />
+                        </div>
 
                         <div className="flex justify-between items-center mt-auto">
-                            {/* Yukarı/Aşağı Butonları */}
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => moveImage(index, 'up')}
-                                    disabled={index === 0}
-                                    className="p-2 bg-zinc-800 rounded hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed text-zinc-300"
-                                    title="Sola/Yukarı Taşı"
-                                >
+                                <button onClick={() => moveImage(index, 'up')} disabled={index === 0} className="p-2 bg-zinc-800 rounded hover:bg-zinc-700 disabled:opacity-30">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                                 </button>
-                                <button
-                                    onClick={() => moveImage(index, 'down')}
-                                    disabled={index === images.length - 1}
-                                    className="p-2 bg-zinc-800 rounded hover:bg-zinc-700 disabled:opacity-30 disabled:cursor-not-allowed text-zinc-300"
-                                    title="Sağa/Aşağı Taşı"
-                                >
+                                <button onClick={() => moveImage(index, 'down')} disabled={index === images.length - 1} className="p-2 bg-zinc-800 rounded hover:bg-zinc-700 disabled:opacity-30">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
                             </div>
-
-                            {/* Silme Butonu */}
-                            <button
-                                onClick={() => removeImage(img.id)}
-                                className="p-2 bg-red-900/50 text-red-500 rounded hover:bg-red-600 hover:text-white transition-colors"
-                                title="Sil"
-                            >
+                            <button onClick={() => removeImage(img.id)} className="p-2 bg-red-900/50 text-red-500 rounded hover:bg-red-600 hover:text-white transition-colors">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                             </button>
                         </div>
                     </div>
                 ))}
-                {images.length === 0 && !uploading && (
-                    <p className="text-zinc-500 text-sm col-span-full text-center py-4">Henüz fotoğraf yüklenmemiş.</p>
-                )}
             </div>
         </div>
     );
